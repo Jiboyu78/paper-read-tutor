@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>论文带读旁批版 · 模板</title>
+<!--
+  paper-read-tutor 参考模板
+  用法：复制本文件，替换所有 {{PLACEHOLDER}} 与示例内容块。
+  版式约定见 SKILL.md：A4 竖版，左栏(原文+译文):右栏(旁批) ≈ 1.6:1。
+  渲染：Chrome headless --print-to-pdf，详见 scripts/render_pdf.sh。
+-->
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Songti SC","Noto Serif CJK SC",serif; color: #1c1c1c; }
+
+  /* ---------- 封面 ---------- */
+  .cover { padding: 22mm 16mm 10mm; border-bottom: 2.5px solid #1e3a5f; }
+  .cover .kicker { font-family: "PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 11px; letter-spacing: 2px; color: #b45309; margin-bottom: 4mm; }
+  .cover h1 { font-family: Georgia,"Times New Roman",serif; font-size: 21px; line-height: 1.35; margin: 0 0 3mm; color: #14304f; }
+  .cover .cn-title { font-size: 15px; color: #333; margin-bottom: 4mm; }
+  .cover .meta { font-family: "PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 10.5px; color: #555; line-height: 1.7; }
+
+  /* ---------- 首页说明 ---------- */
+  .legend { margin: 5mm 16mm 0; padding: 3.5mm 4mm; background: #f7f7f5; border: 1px solid #e0e0dc;
+            font-family:"PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 9.5px; color:#444; line-height: 1.7; }
+  .legend b { color: #14304f; }
+  .chip { display:inline-block; padding: 0 5px; border-radius: 3px; margin: 0 2px; font-size: 9px; }
+  .c-guide { background:#e3edff; color:#1d4ed8; }
+  .c-note  { background:#fdf0d5; color:#b45309; }
+  .c-crit  { background:#fde3e3; color:#b91c1c; }
+  .c-data  { background:#ddf3e7; color:#047857; }
+  .reading { margin: 4mm 16mm 6mm; padding: 3.5mm 4mm; background: #eef4ff; border-left: 3px solid #2563eb;
+             font-family:"PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 10px; color:#1e3a5f; line-height: 1.75; }
+
+  /* ---------- 正文双栏 ---------- */
+  .content { padding: 2mm 16mm 14mm; }
+  .row { display: flex; gap: 5.5mm; margin-bottom: 4.5mm; break-inside: avoid; }
+  .main { flex: 1.58; min-width: 0; }
+  .side { flex: 1; min-width: 0; }
+
+  /* 章节标题块：break-after 防页底孤立标题（铁律） */
+  .sec-head { break-inside: avoid; break-after: avoid-page; margin: 6mm 0 3.5mm; padding: 2.5mm 4mm;
+              background: #14304f; color: #fff; font-family:"PingFang SC","Noto Sans CJK SC",sans-serif;
+              font-size: 12.5px; letter-spacing: 1px; border-radius: 2px; }
+  .sec-head .en { font-family: Georgia,serif; font-size: 10.5px; color: #b9cde4; display:block; margin-top: 1mm; letter-spacing: 0; }
+  /* 小节标题可用浅色变体：style="background:#3d5a80;" 或 "#2f6b4f;" */
+
+  .pgref { display:inline-block; font-family:"PingFang SC",sans-serif; font-size: 8.5px; color:#8a6d1f;
+           background:#fdf6e3; border:1px solid #e8d9a8; border-radius:8px; padding:0 6px; margin-bottom:1.5mm; }
+
+  .en { font-family: Georgia,"Times New Roman",serif; font-size: 9.3px; line-height: 1.5; text-align: justify; color: #222; }
+  .cn { font-family: "PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 10px; line-height: 1.68; color: #2f2f2f;
+        margin-top: 2mm; padding-top: 2mm; border-top: 1px dashed #cfcfc8; }
+  .cn b { color: #14304f; }
+
+  /* 公式展示框：用上下标+符号重排，勿贴 PDF 抽取碎片 */
+  .formula { font-family: Georgia,serif; font-size: 10px; background:#fafaf7; border:1px solid #e4e4de;
+             border-radius:3px; padding:2mm 3mm; margin:2mm 0; text-align:center; color:#14304f; }
+  .formula sub, .en sub { font-size: 0.68em; }
+  .formula sup, .en sup { font-size: 0.68em; }
+
+  /* ---------- 旁批卡（四类固定配色） ---------- */
+  .ncard { border-radius: 3px; padding: 2.4mm 3mm 2.4mm 3.2mm; margin-bottom: 2.6mm;
+           font-family:"PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 9.3px; line-height: 1.62; break-inside: avoid; }
+  .ncard .tag { display:block; font-size: 8.2px; font-weight: 600; letter-spacing: 1px; margin-bottom: 1mm; }
+  .ncard.guide { background:#eef4ff; border-left: 3px solid #2563eb; } .ncard.guide .tag { color:#1d4ed8; }
+  .ncard.note  { background:#fdf6e3; border-left: 3px solid #d97706; } .ncard.note .tag  { color:#b45309; }
+  .ncard.crit  { background:#fdeeee; border-left: 3px solid #dc2626; } .ncard.crit .tag  { color:#b91c1c; }
+  .ncard.data  { background:#ecf8f1; border-left: 3px solid #059669; } .ncard.data .tag  { color:#047857; }
+
+  /* ---------- 迷你数据表：thead/tbody 完整闭合才能跨页重复表头 ---------- */
+  .minitable { display: table; width:100%; border-collapse: collapse;
+               font-family:"PingFang SC","Noto Sans CJK SC",sans-serif; font-size:8.8px; margin: 1.5mm 0; }
+  .minitable th, .minitable td { border: 1px solid #d5d5cd; padding: 1.2mm 1.6mm; text-align: center; }
+  .minitable tr { break-inside: avoid; }
+  .minitable thead { display: table-header-group; }
+  .minitable th { background:#f0f0ea; }
+  .minitable td.hl { background:#eaf3ff; font-weight: 600; color:#14304f; }
+
+  .foot { margin: 8mm 16mm 0; padding-top: 3mm; border-top: 1.5px solid #14304f;
+          font-family:"PingFang SC","Noto Sans CJK SC",sans-serif; font-size: 9px; color:#666; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<!-- ================= 封面 ================= -->
+<div class="cover">
+  <div class="kicker">论文带读 · 旁批对照版</div>
+  <h1>{{PAPER_TITLE_EN}}</h1>
+  <div class="cn-title">{{PAPER_TITLE_ZH}}</div>
+  <div class="meta">
+    作者：{{AUTHORS}}<br>
+    机构：{{AFFILIATIONS}}<br>
+    {{VENUE_DATE}} · {{CODE_OR_LINK}}
+  </div>
+</div>
+
+<div class="legend">
+  <b>使用说明</b>：左侧为论文英文原文（节选处以 ⋯ 标出）与中文译文；右侧为旁批，分四类：
+  <span class="chip c-guide">概念解释</span><span class="chip c-note">读法点评</span><span class="chip c-crit">批判性思考</span><span class="chip c-data">数据解读</span>。
+  每段开头标注原文页码，可与原 PDF 对照。公式为简化排版。
+</div>
+
+<div class="reading">
+  <b>全文一页逻辑链</b>：{{ONE_PARAGRAPH_LOGIC_CHAIN}}
+</div>
+
+<div class="content">
+
+  <!-- ================= 章节示例（按需复制） ================= -->
+  <div class="sec-head">{{SECTION_1_TITLE_ZH}} <span class="en">{{SECTION_1_TITLE_EN}}</span></div>
+
+  <!-- 段落单元：左原文+译文 / 右旁批卡 -->
+  <div class="row">
+    <div class="main">
+      <span class="pgref">p.{{N}} {{PARAGRAPH_LABEL}}</span>
+      <div class="en">{{ENGLISH_PARAGRAPH}}</div>
+      <div class="cn">{{CHINESE_TRANSLATION}}</div>
+    </div>
+    <div class="side">
+      <div class="ncard guide"><span class="tag">概念解释</span>{{CONCEPT_CARD}}</div>
+      <div class="ncard note"><span class="tag">读法点评</span>{{READING_CARD}}</div>
+    </div>
+  </div>
+
+  <!-- 含公式的段落单元 -->
+  <div class="row">
+    <div class="main">
+      <span class="pgref">p.{{N}} {{EQUATION_LABEL}}</span>
+      <div class="en">{{ENGLISH_LEAD_IN}}</div>
+      <div class="formula">{{HTML_EQUATION_WITH_SUB_SUP}}　　({{EQ_NO}})</div>
+      <div class="cn">{{CHINESE_EXPLANATION}}</div>
+    </div>
+    <div class="side">
+      <div class="ncard crit"><span class="tag">批判性思考</span>{{CRITIQUE_CARD}}</div>
+    </div>
+  </div>
+
+  <!-- 含迷你数据表的段落单元 -->
+  <div class="row">
+    <div class="main">
+      <span class="pgref">p.{{N}} {{TABLE_LABEL}}</span>
+      <div class="en">{{ENGLISH_TABLE_CONTEXT}}</div>
+      <table class="minitable">
+        <thead>
+          <tr><th>{{COL_1}}</th><th>{{COL_2}}</th><th>{{COL_3}}</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>{{ROW_1}}</td><td>{{VAL}}</td><td>{{VAL}}</td></tr>
+          <tr><td class="hl">{{HIGHLIGHT_ROW}}</td><td class="hl">{{VAL}}</td><td class="hl">{{VAL}}</td></tr>
+        </tbody>
+      </table>
+      <div class="cn">{{CHINESE_TABLE_READING}}</div>
+    </div>
+    <div class="side">
+      <div class="ncard data"><span class="tag">数据解读</span>{{DATA_CARD_WITH_COMPUTATION}}</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>带读小结</b>：{{CLOSING_SUMMARY_AND_NEXT_STEPS}}
+  </div>
+</div>
+</body>
+</html>

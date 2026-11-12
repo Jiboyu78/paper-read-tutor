@@ -1,0 +1,29 @@
+# ---- 中间产物与 QA ----
+preview/
+*.pdf
+!references/*.pdf
+en_blocks.json
+*_blocks.json
+
+# ---- 用户论文输入 ----
+papers/
+*.paper.pdf
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+
+# ---- 编辑器 ----
+.idea/
+.vscode/
+*.swp
